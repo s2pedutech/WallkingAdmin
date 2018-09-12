@@ -1,1 +1,247 @@
 <app-navbar></app-navbar>
+<br>
+<div class="container">
+  <div class="row">
+    <div class="col-sm">
+      <button (click)="showStudentsSection()" class="btn btn-primary">Students</button>
+    </div>
+    
+  </div>
+</div>
+<br>
+<div *ngIf="currentSection === 'student'" id="student">
+<div style="padding:10px;">
+    <div class="row">
+    <div class="col-sm">
+        <input [(ngModel)]="searchString" (keyup)="searchStudent()" type="text" id="searchString" name="searchString" placeholder="Search Student" >
+    </div>
+    <div class="col-sm">
+        <button (click)="addNewStudent()" style="padding:10px;" class="btn btn-primary btn-sm">Add New Student</button>
+    </div>
+    </div>
+</div>
+<table class="table">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Mobile</th>
+      <th scope="col">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let student of studs;let i = index">
+      <th scope="row">{{i+1}}</th>
+      <td>{{student.name}}</td>
+      <td>{{student.email}}</td>
+      <td>{{student.mobno}}</td>
+      <td>
+          <div class="btn-group" role="group" aria-label="Basic example">
+            <button (click)="editStudentData(student)" class="btn btn-sm btn-primary">Edit</button>
+            <button class="btn btn-sm btn-primary">Adm</button>
+            <button class="btn btn-sm btn-primary">Pmnt</button>
+            <button class="btn btn-sm btn-primary">Res</button>
+          </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div *ngIf="currentSection === 'newStudent'" id="newStudent">
+    <div style="padding: 50px;">
+    <form [formGroup]="newStudentForm" (submit)="saveStudent()">
+        <div>
+        <label>
+        Name*:
+            <input class="form-control form-control-lg" type="text" formControlName="name">
+            <div *ngIf="newStudentForm.controls.name.invalid && (newStudentForm.controls.name.dirty || newStudentForm.controls.name.touched)" class="alert alert-danger">Name is required</div>
+
+        </label>
+        </div>
+        <div>
+            <label>
+                Email: 
+                <input class="form-control form-control-lg" type="text" formControlName="email">
+            </label>
+        </div>
+        <div>
+            <label>
+                Mobile no:
+                <input class="form-control form-control-lg" type="text" formControlName="mobno">
+            </label>
+        </div>
+        <div>
+            <label>
+                Alternate Mob. No
+                <input class="form-control form-control-lg" type="text" formControlName="amobno">
+            </label>
+        </div>
+        <div>
+            <label>
+                Image
+                <input class="form-control form-control-lg" type="file" (change)="onFileChange($event)" formControlName="imageUrl">
+            </label>
+        </div>
+        <div>
+            <label>
+                Date of Birth
+                <input class="form-control form-control-lg" type="date" formControlName="dob">
+            </label>
+        </div>
+        <div>
+            <label>
+                Gender
+                <select class="form-control form-control-lg" formControlName="gender">
+                    <option checked value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+                
+            </label>
+        </div>
+        <div>
+        <label>
+        Username*:
+            <input class="form-control form-control-lg" type="text" formControlName="uname">
+            <div *ngIf="newStudentForm.controls.uname.invalid && (newStudentForm.controls.uname.dirty || newStudentForm.controls.uname.touched)" class="alert alert-danger">UserName is required</div>
+        </label>
+        </div>
+        <div>
+        <label>
+        Password*:
+            <input class="form-control form-control-lg" type="text" minlength="6" formControlName="password">
+            <div *ngIf="newStudentForm.controls.password.invalid && (newStudentForm.controls.password.dirty || newStudentForm.controls.password.touched)" class="alert alert-danger">Password is required and minimum length is 6</div>
+        </label>
+        </div>
+        
+        <div>
+        <label>
+        Permanent Address:
+            <input class="form-control form-control-lg" type="textbox" formControlName="paddress">
+        </label>
+        </div>
+        
+        <div>
+        <label>
+            Description:
+            <input class="form-control form-control-lg" type="textbox" formControlName="description">
+        </label>
+        </div>
+        <div>
+            <label>
+                Status
+                <select class="form-control form-control-lg" formControlName="status">
+                    <option checked value="Active">Active</option>
+                    <option value="InActive">InActive</option>
+                </select>
+                
+            </label>
+        </div>
+        <div>
+            <button [disabled]="!newStudentForm.valid" class="btn btn-primary btn-lg" type="submit">Submit</button>
+            <button (click)="cancel()" class="btn btn-primary btn-lg">Cancel</button>
+        </div>
+    </form>
+    </div>
+</div>
+
+<div id="admission">
+    <table class="table" *ngIf="currentSection === 'admissions'">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Email1</th>
+      <th scope="col">Mobile1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jacob</td>
+      <td>Thornton</td>
+      <td>@fat</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>Larry</td>
+      <td>the Bird</td>
+      <td>@twitter</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div id="payments">
+    <table class="table" *ngIf="currentSection === 'payments'">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Mobile</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jacob</td>
+      <td>Thornton</td>
+      <td>@fat</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>Larry</td>
+      <td>the Bird</td>
+      <td>@twitter</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div id="results">
+    <table class="table" *ngIf="currentSection === 'results'">
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Mobile</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jacob</td>
+      <td>Thornton</td>
+      <td>@fat</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td>Larry</td>
+      <td>the Bird</td>
+      <td>@twitter</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
