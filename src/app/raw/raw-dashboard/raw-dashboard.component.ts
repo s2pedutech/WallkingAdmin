@@ -33,8 +33,7 @@ newStudentForm: FormGroup = new FormGroup({
     paddress: new FormControl(''),
     description: new FormControl(''),
     status: new FormControl(''),
-    key: new FormControl(''),
-    imageUrl: new FormControl('')
+    key: new FormControl('')
     
 });
 uploadStudentImage(key)
@@ -53,8 +52,10 @@ uploadStudentImage(key)
     () => {
          uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
          console.log('File available at => ', downloadURL);
-        this.newStudentForm.controls.imageUrl.setValue(downloadURL);
-        firebase.database().ref(str).update(this.newStudentForm.value);
+        //this.newStudentForm.controls.imageUrl.setValue(downloadURL);
+             var v:any = {}
+             v.key = downloadURL;
+        firebase.database().ref(str).update(v);
   });
     });
 }
@@ -96,12 +97,14 @@ createFirebaseUser()
         // create an entry in db under students section
         var refStr = "student1/";
         
-        var key = firebase.database().ref('student1/').push(this.newStudentForm.value);
+        var key = firebase.database().ref('student1/').push(this.newStudentForm.value).key;
         
+        /*
         if(this.fileName != null)
         {
             this.uploadStudentImage(key);
         }
+        */
         
         
     }, err => {

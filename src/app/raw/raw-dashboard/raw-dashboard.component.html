@@ -1,13 +1,6 @@
 <app-navbar></app-navbar>
 <br>
-<div class="container">
-  <div class="row">
-    <div class="col-sm">
-      <button (click)="showStudentsSection()" class="btn btn-primary">Students</button>
-    </div>
-    
-  </div>
-</div>
+
 <br>
 <div *ngIf="currentSection === 'student'" id="student">
 <div style="padding:10px;">
@@ -78,12 +71,12 @@
                 <input class="form-control form-control-lg" type="text" formControlName="amobno">
             </label>
         </div>
-        <div>
+        <!--<div>
             <label>
                 Image
                 <input class="form-control form-control-lg" type="file" (change)="onFileChange($event)" formControlName="imageUrl">
             </label>
-        </div>
+        </div>-->
         <div>
             <label>
                 Date of Birth
