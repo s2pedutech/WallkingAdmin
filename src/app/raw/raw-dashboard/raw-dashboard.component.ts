@@ -15,6 +15,7 @@ import * as firebase from 'firebase';
 })
 export class RawDashboardComponent implements OnInit {
 
+    baseStr:string = "student1/";
     display='none';
     displayImage="";
     currentSection : string = "login";
@@ -61,7 +62,8 @@ newStudentForm: FormGroup = new FormGroup({
     payments: any;
         paymentForm: FormGroup = new FormGroup({
             paymentDate: new FormControl('', Validators.required),
-            amount: new FormControl('', Validators.required)
+            amount: new FormControl('', Validators.required),
+            paymentMode: new FormControl('', Validators.required)
         });
     // End Payment Form controls
     // Login Form
@@ -79,7 +81,7 @@ newStudentForm: FormGroup = new FormGroup({
         });
     // End Result Form ctrls
     ngOnInit() {  
-        this.refStudent.once('value', resp => {
+        this.refStudent.on('value', resp => {
             this.students = snapshotToArray(resp);
             this.studs = this.students;
             console.log(this.students);
@@ -102,6 +104,7 @@ newStudentForm: FormGroup = new FormGroup({
     logout()
     {
         this.loginForm.reset();
+        this.paymentForm.reset();
         this.currentSection = "login";
     }
     viewImage(img)
@@ -123,7 +126,7 @@ newStudentForm: FormGroup = new FormGroup({
     deleteResult(index)
     {
         this.results.splice(index,1);
-        var refstr = "student1/" + this.currentStudent.key + "/results";
+        var refstr = this.baseStr + this.currentStudent.key + "/results";
         firebase.database().ref(refstr).set(this.results);
     }
     uploadResult()
@@ -131,7 +134,7 @@ newStudentForm: FormGroup = new FormGroup({
         var sem = this.resultForm.controls.semester.value;
         var results = this.results;
         console.log(this.resultForm.value);
-        var refstr = "student1/" + this.currentStudent.key;
+        var refstr = this.baseStr + this.currentStudent.key;
         var refstr1 = refstr;
         refstr += "/" + this.resultForm.controls.semester.value;
         
@@ -176,12 +179,26 @@ newStudentForm: FormGroup = new FormGroup({
     admit()
     {
         //console.log(this.admissionForm.value);
-        var strref = "student1/" + this.currentStudent.key + "/admission";
+        var strref = this.baseStr + this.currentStudent.key + "/admission";
         console.log(strref);
-        this.admissionForm.controls.enrollNum.setValue("123");
-        firebase.database().ref(strref).update(this.admissionForm.value);
-        alert("Admitted successfully");
-        this.currentSection = "student";
+        
+        var str = this.baseStr + "lastEnrollment/";
+        firebase.database().ref("lastEnrollment/").once('value', resp => {
+            //console.log(resp.val());
+            var enr:any = resp.val();
+            var arr = enr.enum.split("/");
+            var num = arr[2];
+            var nn = arr[0] + "/" + arr[1] + "/" + (parseInt(num) + 1);
+            console.log(nn);
+            var e = nn;
+            
+            this.admissionForm.controls.enrollNum.setValue(e);
+            console.log(this.admissionForm.value);
+            alert("here");
+            firebase.database().ref(strref).update(this.admissionForm.value);
+            alert("Admitted successfully");
+            this.currentSection = "student";
+            });
     }
     
     changeCourse(e)
@@ -208,8 +225,8 @@ uploadStudentImage(key)
 {
     // upload the image to firebase storage
     console.log(key);
-    var str = "student1/" + key;
-    var uploadTask = firebase.storage().ref('student1/').put(this.fileName);
+    var str = this.baseStr + key;
+    var uploadTask = firebase.storage().ref(this.baseStr).put(this.fileName);
     uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, (snapshot:any) => {
         var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         console.log("Uploaded: " + progress + "%" );
@@ -251,7 +268,8 @@ saveStudent()
     }
     else
         {
-            var str = "student1/" + this.newStudentForm.controls.key.value;
+            var str = this.baseStr + this.newStudentForm.controls.key.value;
+            //str += ""
             firebase.database().ref(str).update(this.newStudentForm.value);
         }
 }
@@ -259,7 +277,7 @@ editStudentData(stu)
 {
     this.editStudent = true;
     this.currentSection = "newStudent";
-    this.newStudentForm.setValue(stu);
+    this.newStudentForm.patchValue(stu);
     this.currentStudent = stu;
 }
 
@@ -287,14 +305,15 @@ resultInfo(stu)
 }
     addPayment()
     {
-        var refstr = "student1/" + this.currentStudent.key + "/payment";
+        var refstr = this.baseStr + this.currentStudent.key + "/payment";
         this.payments.push(this.paymentForm.value);
         firebase.database().ref(refstr).set(this.payments);
+        this.paymentForm.reset();
         //alert("done");
     }
     removePayment(index)
     {
-        var refstr = "student1/" + this.currentStudent.key + "/payment";
+        var refstr = this.baseStr + this.currentStudent.key + "/payment";
         console.log(this.payments);
         this.payments.splice(index,1);
         console.log(this.payments);
@@ -304,9 +323,10 @@ admitStudent(stu)
 {
     this.currentSection = "admissions";
     this.currentStudent = stu;
+    console.log(stu);
     firebase.database().ref("courses/").on('value', resp => {
             this.courses = snapshotToArray(resp);
-            var refstr = "student1/" + stu.key + "/admission";
+            var refstr = this.baseStr + stu.key + "/admission";
             console.log(refstr);
             firebase.database().ref(refstr).on('value',resp => {
             console.log(resp.val());
@@ -363,10 +383,12 @@ createFirebaseUser()
     str += "@gmail.com";
     firebase.auth().createUserWithEmailAndPassword(str, this.newStudentForm.controls.password.value).then(res => {
         // create an entry in db under students section
-        var refStr = "student1/";
-        
-        var key = firebase.database().ref('student1/').push(this.newStudentForm.value).key;
-        
+        var refStr = this.baseStr;
+        //var enr = this.generateEnrollmentNum();
+        //this.newStudentForm.controls.enrollNum.setValue(enr);
+        var key = firebase.database().ref(this.baseStr).push(this.newStudentForm.value).key;
+        alert("Student Created Successfully");
+        this.currentSection = "student";
         /*
         if(this.fileName != null)
         {
@@ -380,6 +402,19 @@ createFirebaseUser()
     });
 }
 
+generateEnrollmentNum()
+{
+    var str = this.baseStr + "lastEnrollment/";
+    firebase.database().ref("lastEnrollment/").once('value', resp => {
+        //console.log(resp.val());
+        var enr:any = resp.val();
+        var arr = enr.enum.split("/");
+        var num = arr[2];
+        var nn = arr[0] + "/" + arr[1] + "/" + (parseInt(num) + 1);
+        console.log(nn);
+        return nn;
+    });
+}
 changeGender()
 {
     if(this.gender1 == "Male")
@@ -389,7 +424,7 @@ changeGender()
 }
 constructor(private http:HttpClient) { 
     //this.currentSection = "student";
-    
+     //console.log(this.generateEnrollmentNum());
 }
 
 addNewStudent()

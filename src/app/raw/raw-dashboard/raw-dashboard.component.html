@@ -167,6 +167,8 @@
 
 <div style="padding: 50px;" *ngIf="currentSection === 'admissions'" id="admission">
     <h2>{{currentStudent.name}}</h2>
+    <div *ngIf="currentStudent.admission"><h4>{{currentStudent.admission.enrollNum}}</h4></div>
+    
     <form [formGroup]="admissionForm" (submit)="admit()">
         <div>
             <label>
@@ -232,6 +234,7 @@
               <th scope="col">#</th>
               <th scope="col">Amount</th>
               <th scope="col">Date</th>
+              <th scope="col">Payment Mode</th>
               <th scope="col">Action</th>
             </tr>
         </thead>
@@ -240,6 +243,7 @@
                 <td>{{i+1}}</td>
                 <td>{{p.amount}}</td>
                 <td>{{p.paymentDate}}</td>
+                <td>{{p.paymentMode}}</td>
                 <td><button (click)="removePayment(i)" class="btn btn-primary btn-sm">Del</button></td>
             </tr>
             <tr>
@@ -247,6 +251,7 @@
                 
                 <td><input scope="col" formControlName="amount" type="text" value="p.amount"></td>
                 <td><input scope="col" formControlName="paymentDate" type="date" value="p.paymentDate"></td>
+                <td><input scope="col" formControlName="paymentMode" type="text" value="p.paymentMode"></td>
             </tr>
         </tbody>
     </table>
@@ -299,6 +304,7 @@
             </label>
         </div>
         <button [disabled]="!resultForm.valid" class="btn btn-primary btn-lg" type="submit">Add Result</button>
+        <button (click)="cancel()" class="btn btn-primary btn-lg">Home</button>
     </form>
 </div>
 
