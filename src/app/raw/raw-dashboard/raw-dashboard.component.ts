@@ -32,7 +32,7 @@ newStudentForm: FormGroup = new FormGroup({
     email: new FormControl(''),
     mobno: new FormControl(''),
     amobno: new FormControl(''),
-    dob: new FormControl(''),
+    dob: new FormControl('', Validators.required),
     gender: new FormControl(''),
     uname: new FormControl('', Validators.required),
     password: new FormControl('', Validators.required),
@@ -77,7 +77,8 @@ newStudentForm: FormGroup = new FormGroup({
         currentImage: any;
         resultForm: FormGroup = new FormGroup({
             semester : new FormControl('', Validators.required),
-            imageUrl: new FormControl('', Validators.required)
+            imageUrl: new FormControl('', Validators.required),
+            resultDate: new FormControl('', Validators.required)
         });
     // End Result Form ctrls
     ngOnInit() {  
@@ -132,6 +133,7 @@ newStudentForm: FormGroup = new FormGroup({
     uploadResult()
     {
         var sem = this.resultForm.controls.semester.value;
+        var rdate = this.resultForm.controls.resultDate.value;
         var results = this.results;
         console.log(this.resultForm.value);
         var refstr = this.baseStr + this.currentStudent.key;
@@ -160,6 +162,7 @@ newStudentForm: FormGroup = new FormGroup({
                 var u:any = {}
                 u.semester = sem;
                 u.imageUrl = downloadURL;
+                u.resultDate = rdate;
                      var foundFlag:boolean = false;
                 results.filter(x => {
                     if(x.semester == sem)
@@ -167,13 +170,16 @@ newStudentForm: FormGroup = new FormGroup({
                         foundFlag = true;
                         x.semester = sem;
                         x.imageUrl = downloadURL;
+                        x.resultDate = rdate;
                     }
                 });     
                 if(!foundFlag)
                     results.push(u);
                 firebase.database().ref(refstr1).set(results);
+                
   });
         });
+        this.resultForm.reset();
     }
     
     admit()
@@ -271,7 +277,9 @@ saveStudent()
             var str = this.baseStr + this.newStudentForm.controls.key.value;
             //str += ""
             firebase.database().ref(str).update(this.newStudentForm.value);
+            this.currentSection = "student";
         }
+    
 }
 editStudentData(stu)
 {

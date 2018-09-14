@@ -105,7 +105,7 @@
         </div>-->
         <div>
             <label>
-                Date of Birth
+                Date of Birth*
                 <input class="form-control form-control-lg" type="date" formControlName="dob">
             </label>
         </div>
@@ -267,6 +267,7 @@
       <th scope="col">#</th>
       <th scope="col">Semester</th>
       <th scope="col">Result</th>
+      <th scope="col">Result Date</th>
       <th scope="col">Action</th>
       <th scope="col">Action</th>
     </tr>
@@ -276,6 +277,7 @@
           <th scope="row">{{i+1}}</th>
           <td>{{r.semester}}</td>
           <td><img style="height: 50px; width: 50px;" src="{{r.imageUrl}}"></td>
+          <td>{{r.resultDate}}</td>
           <td><button (click)="deleteResult(i)" class="btn btn-primary btn-sm">Del</button></td>
           <td><a class="btn btn-primary btn-sm" (click)="viewImage(r.imageUrl)" download>View</a></td>
       </tr>
@@ -294,13 +296,20 @@
                     <option>Sem 6</option>
                     <option>Sem 7</option>
                     <option>Sem 8</option>
+                    <option>Certificate</option>
                 </select>
             </label>
         </div>
         <div>
             <label>
+                Result Date:<br>
+                <input type="date" formControlName="resultDate">
+            </label>
+        </div>
+        <div>
+            <label>
                 Select Image: <br>
-        <input type="file" (change)="onFileChange($event)"  accept=".jpg,.png" formControlName="imageUrl"> 
+        <input type="file" (change)="onFileChange($event)" accept=".jpg,.png" formControlName="imageUrl"> 
             </label>
         </div>
         <button [disabled]="!resultForm.valid" class="btn btn-primary btn-lg" type="submit">Add Result</button>
