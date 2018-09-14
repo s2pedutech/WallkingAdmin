@@ -2,6 +2,26 @@
 <br>
 
 <br>
+<div style="padding: 50px;border: 5px;" *ngIf="currentSection === 'login'">
+  
+    <form [formGroup]="loginForm" (submit)="loginAdmin()">
+        <div>
+            <label>
+                Username:<br>
+                <input type="text" formControlName="userName">
+            </label>
+        </div>
+        <div>
+            <label>
+                Password:<br>
+                <input type="password" formControlName="adminPassword">
+            </label>
+        </div>
+        <button [disabled]="!loginForm.valid" class="btn btn-primary btn-lg" type="submit">Sign-In</button>
+    </form>
+    
+</div>
+<br>
 <div *ngIf="currentSection === 'student'" id="student">
 <div style="padding:10px;">
     <div class="row">
@@ -10,6 +30,12 @@
     </div>
     <div class="col-sm">
         <button (click)="addNewStudent()" style="padding:10px;" class="btn btn-primary btn-sm">Add New Student</button>
+    </div>
+        <div class="col-sm">
+        
+    </div>
+        <div class="col-sm">
+        <button (click)="logout()" style="padding:10px;" class="btn btn-primary btn-sm">Logout</button>
     </div>
     </div>
 </div>
@@ -32,9 +58,9 @@
       <td>
           <div class="btn-group" role="group" aria-label="Basic example">
             <button (click)="editStudentData(student)" class="btn btn-sm btn-primary">Edit</button>
-            <button class="btn btn-sm btn-primary">Adm</button>
-            <button class="btn btn-sm btn-primary">Pmnt</button>
-            <button class="btn btn-sm btn-primary">Res</button>
+            <button (click)="admitStudent(student)" class="btn btn-sm btn-primary">Adm</button>
+            <button (click)="paymentInfo(student)" class="btn btn-sm btn-primary">Pmnt</button>
+            <button (click)="resultInfo(student)" class="btn btn-sm btn-primary">Res</button>
           </div>
       </td>
     </tr>
@@ -139,102 +165,155 @@
     </div>
 </div>
 
-<div id="admission">
-    <table class="table" *ngIf="currentSection === 'admissions'">
+<div style="padding: 50px;" *ngIf="currentSection === 'admissions'" id="admission">
+    <h2>{{currentStudent.name}}</h2>
+    <form [formGroup]="admissionForm" (submit)="admit()">
+        <div>
+            <label>
+                Select Course*
+                <select (change)="changeCourse($event)" class="form-control form-control-lg" formControlName="course">
+                    <option value="">Select Course</option>
+                    <option [value]="c.catname" *ngFor="let c of courses">{{c.catname}}</option>
+                </select>
+                
+            </label>
+        </div>
+        <div>
+            <label>
+                Select SubCourse*
+                <select (change)="changeSubCourse($event)" class="form-control form-control-lg" formControlName="subCourse">
+                    <option value="">Select SubCourse</option>
+                    <option value="{{c.subcatname}}" *ngFor="let c of subCourses">{{c.subcatname}}</option>
+                </select>
+                
+            </label>
+        </div>
+        <div>
+            <label>
+                Select Category*
+                <select class="form-control form-control-lg" formControlName="category">
+                    <option value="">Select Category</option>
+                    <option value="{{c.part}}" *ngFor="let c of categories">{{c.part}}</option>
+                </select>
+                
+            </label>
+        </div>
+        <div>
+            <label>
+                Date of Admission*
+                <input class="form-control form-control-lg" type="date" formControlName="admissionDate">
+            </label>
+        </div>
+        <div>
+            <label>
+                Fees*
+                <input class="form-control form-control-lg" type="text" formControlName="fees">
+            </label>
+        </div>
+        <!--<div>
+            <label>
+                Enrollment Num*
+                <input class="form-control form-control-lg" type="text" formControlName="enrollNum">
+            </label>
+        </div>-->
+        <div>
+            <button [disabled]="!admissionForm.valid" class="btn btn-primary btn-lg" type="submit">Submit</button>
+            <button (click)="cancel()" class="btn btn-primary btn-lg">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<div style="padding: 50px;" *ngIf="currentSection === 'payments'">
+    <h2>{{currentStudent.name}}</h2>
+    <form [formGroup]="paymentForm">
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Date</th>
+              <th scope="col">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr  *ngFor="let p of payments; let i = index">
+                <td>{{i+1}}</td>
+                <td>{{p.amount}}</td>
+                <td>{{p.paymentDate}}</td>
+                <td><button (click)="removePayment(i)" class="btn btn-primary btn-sm">Del</button></td>
+            </tr>
+            <tr>
+                <td scope="col"><button class="btn btn-primary btn-sm" (click)="addPayment()">Add New Payment</button></td>
+                
+                <td><input scope="col" formControlName="amount" type="text" value="p.amount"></td>
+                <td><input scope="col" formControlName="paymentDate" type="date" value="p.paymentDate"></td>
+            </tr>
+        </tbody>
+    </table>
+    </form>
+    <button class="btn btn-primary btn-lg" (click)="cancel()">Home</button>
+</div>
+
+<div style="padding: 50px;" *ngIf="currentSection === 'results'">
+    <h2>{{currentStudent.name}}</h2>
+      <table class="table">
   <thead class="thead-dark">
     <tr>
       <th scope="col">#</th>
-      <th scope="col">Name</th>
-      <th scope="col">Email1</th>
-      <th scope="col">Mobile1</th>
+      <th scope="col">Semester</th>
+      <th scope="col">Result</th>
+      <th scope="col">Action</th>
+      <th scope="col">Action</th>
     </tr>
   </thead>
   <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Jacob</td>
-      <td>Thornton</td>
-      <td>@fat</td>
-    </tr>
-    <tr>
-      <th scope="row">3</th>
-      <td>Larry</td>
-      <td>the Bird</td>
-      <td>@twitter</td>
-    </tr>
+      <tr *ngFor="let r of results; let i=index">
+          <th scope="row">{{i+1}}</th>
+          <td>{{r.semester}}</td>
+          <td><img style="height: 50px; width: 50px;" src="{{r.imageUrl}}"></td>
+          <td><button (click)="deleteResult(i)" class="btn btn-primary btn-sm">Del</button></td>
+          <td><a class="btn btn-primary btn-sm" (click)="viewImage(r.imageUrl)" download>View</a></td>
+      </tr>
   </tbody>
-</table>
+    </table>
+    <form [formGroup]="resultForm" (submit)="uploadResult()">
+        <div>
+            <label>
+                Select Semester: 
+                <select class="form-control form-control-lg" formControlName="semester">
+                    <option>Sem 1</option>
+                    <option>Sem 2</option>
+                    <option>Sem 3</option>
+                    <option>Sem 4</option>
+                    <option>Sem 5</option>
+                    <option>Sem 6</option>
+                    <option>Sem 7</option>
+                    <option>Sem 8</option>
+                </select>
+            </label>
+        </div>
+        <div>
+            <label>
+                Select Image: <br>
+        <input type="file" (change)="onFileChange($event)"  accept=".jpg,.png" formControlName="imageUrl"> 
+            </label>
+        </div>
+        <button [disabled]="!resultForm.valid" class="btn btn-primary btn-lg" type="submit">Add Result</button>
+    </form>
 </div>
 
-<div id="payments">
-    <table class="table" *ngIf="currentSection === 'payments'">
-  <thead class="thead-dark">
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Name</th>
-      <th scope="col">Email</th>
-      <th scope="col">Mobile</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Jacob</td>
-      <td>Thornton</td>
-      <td>@fat</td>
-    </tr>
-    <tr>
-      <th scope="row">3</th>
-      <td>Larry</td>
-      <td>the Bird</td>
-      <td>@twitter</td>
-    </tr>
-  </tbody>
-</table>
-</div>
 
-<div id="results">
-    <table class="table" *ngIf="currentSection === 'results'">
-  <thead class="thead-dark">
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Name</th>
-      <th scope="col">Email</th>
-      <th scope="col">Mobile</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Mark</td>
-      <td>Otto</td>
-      <td>@mdo</td>
-    </tr>
-    <tr>
-      <th scope="row">2</th>
-      <td>Jacob</td>
-      <td>Thornton</td>
-      <td>@fat</td>
-    </tr>
-    <tr>
-      <th scope="row">3</th>
-      <td>Larry</td>
-      <td>the Bird</td>
-      <td>@twitter</td>
-    </tr>
-  </tbody>
-</table>
-</div>
 
+<div class="modal" tabindex="-1" role="dialog" [ngStyle]="{'display':display}">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      
+      <div class="modal-body">
+        <img style="height: 100%; width: 100%;" src="{{displayImage}}">
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeModal()" type="button" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

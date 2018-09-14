@@ -3,7 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { NavbarComponent } from '../../nav/navbar/navbar.component';
 
 import { FormGroup, FormControl, Validators } from '@angular/forms';
-
+import { Ng4LoadingSpinnerService } from 'ng4-loading-spinner';
+import { ResponseContentType } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import * as firebase from 'firebase';
 
 @Component({
@@ -13,10 +15,13 @@ import * as firebase from 'firebase';
 })
 export class RawDashboardComponent implements OnInit {
 
-    currentSection : string;
+    display='none';
+    displayImage="";
+    currentSection : string = "login";
     fileName: any;
     searchString: string;
     refStudent = firebase.database().ref('student1');
+    currentStudent: any;
     editStudent: boolean = false;
     students: any;
     studs: any;
@@ -36,6 +41,169 @@ newStudentForm: FormGroup = new FormGroup({
     key: new FormControl('')
     
 });
+
+    // Admission form controls and variables
+    courses: any;
+    subCourses: Array<any>;
+    categories: any;
+    admissionForm: FormGroup = new FormGroup({
+        course: new FormControl('', Validators.required),
+        subCourse: new FormControl('', Validators.required),
+        category: new FormControl('', Validators.required),
+        admissionDate: new FormControl('', Validators.required),
+        fees: new FormControl('', Validators.required),
+        enrollNum: new FormControl('1')
+    });
+    // End of Admission form controls and variables
+    
+    // Payment Form
+        showNewPayment: boolean = false;
+    payments: any;
+        paymentForm: FormGroup = new FormGroup({
+            paymentDate: new FormControl('', Validators.required),
+            amount: new FormControl('', Validators.required)
+        });
+    // End Payment Form controls
+    // Login Form
+    loginForm: FormGroup = new FormGroup({
+        userName: new FormControl('', Validators.required),
+        adminPassword: new FormControl('', Validators.required)
+    });
+    // End Login Form
+    // Results Form
+        results =[];
+        currentImage: any;
+        resultForm: FormGroup = new FormGroup({
+            semester : new FormControl('', Validators.required),
+            imageUrl: new FormControl('', Validators.required)
+        });
+    // End Result Form ctrls
+    ngOnInit() {  
+        this.refStudent.once('value', resp => {
+            this.students = snapshotToArray(resp);
+            this.studs = this.students;
+            console.log(this.students);
+        });
+        
+        
+    }
+    loginAdmin()
+    {
+        
+        if(this.loginForm.controls.userName.value == "admin" && this.loginForm.controls.adminPassword.value == "admin123")
+        {
+            this.currentSection = "student";
+        }
+        else
+        {
+            alert("Invalid Username / Password")
+        }
+    }
+    logout()
+    {
+        this.loginForm.reset();
+        this.currentSection = "login";
+    }
+    viewImage(img)
+    {
+        this.display='block';
+        this.displayImage = img;
+    }
+    closeModal()
+    {
+        this.display = 'none';
+    }
+    downloadFile(url)
+    {
+        var storageRef = firebase.storage().refFromURL(url);
+        console.log("gandhar download");
+        
+        console.log(storageRef);
+    }
+    deleteResult(index)
+    {
+        this.results.splice(index,1);
+        var refstr = "student1/" + this.currentStudent.key + "/results";
+        firebase.database().ref(refstr).set(this.results);
+    }
+    uploadResult()
+    {
+        var sem = this.resultForm.controls.semester.value;
+        var results = this.results;
+        console.log(this.resultForm.value);
+        var refstr = "student1/" + this.currentStudent.key;
+        var refstr1 = refstr;
+        refstr += "/" + this.resultForm.controls.semester.value;
+        
+        var metadata: any = {}
+        metadata.name = this.resultForm.controls.semester.value;
+        var uploadTask = firebase.storage().ref(refstr).put(this.currentImage,metadata);
+        uploadTask.on(firebase.storage.TaskEvent.STATE_CHANGED, (snapshot:any) => {
+            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log('Upload is ' + progress + '% done');
+        },
+        error => {
+            
+        },
+        () => {
+            
+                 uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
+                    console.log('File available at', downloadURL);
+                     console.log(sem);
+                     
+                //this.resultForm.controls.imageUrl = downloadURL;
+                refstr1 += "/results";
+                console.log(refstr1);
+                var u:any = {}
+                u.semester = sem;
+                u.imageUrl = downloadURL;
+                     var foundFlag:boolean = false;
+                results.filter(x => {
+                    if(x.semester == sem)
+                    {
+                        foundFlag = true;
+                        x.semester = sem;
+                        x.imageUrl = downloadURL;
+                    }
+                });     
+                if(!foundFlag)
+                    results.push(u);
+                firebase.database().ref(refstr1).set(results);
+  });
+        });
+    }
+    
+    admit()
+    {
+        //console.log(this.admissionForm.value);
+        var strref = "student1/" + this.currentStudent.key + "/admission";
+        console.log(strref);
+        this.admissionForm.controls.enrollNum.setValue("123");
+        firebase.database().ref(strref).update(this.admissionForm.value);
+        alert("Admitted successfully");
+        this.currentSection = "student";
+    }
+    
+    changeCourse(e)
+    {
+        console.log(e.target);
+        this.courses.filter(val => {
+            if(val.catname === e.target.value)
+                this.subCourses = val.subCategory;
+        });
+        console.log(this.admissionForm.controls.course.value);
+    }
+    
+    changeSubCourse(e)
+    {
+        console.log(e.target.value);
+        this.subCourses.filter(val => {
+            console.log(val.subcatname);
+            if(val.subcatname === e.target.value)
+                this.categories = val.list;
+        });
+    }
+    
 uploadStudentImage(key)
 {
     // upload the image to firebase storage
@@ -61,12 +229,17 @@ uploadStudentImage(key)
 }
 onFileChange(event)
 {
-    this.fileName = event.target.files[0];
-    
+    console.log(event.target.files[0]);
+    // should be cleaned before leaving the page
+    this.currentImage = event.target.files[0];
 }
 cancel(){
     this.currentSection = "student";
     this.newStudentForm.reset();
+    this.admissionForm.reset();
+    this.paymentForm.reset();
+    this.resultForm.reset();
+    this.currentImage = null;
 }
 saveStudent()
 {
@@ -87,7 +260,102 @@ editStudentData(stu)
     this.editStudent = true;
     this.currentSection = "newStudent";
     this.newStudentForm.setValue(stu);
+    this.currentStudent = stu;
 }
+
+paymentInfo(stu)
+{
+    
+    this.currentSection = "payments";
+    this.currentStudent = stu;
+    if(stu.payment != null)
+        this.payments = stu.payment;
+    else
+        this.payments=[];
+    console.log(stu.payment);
+}
+resultInfo(stu)
+{
+    this.currentSection = "results";
+    this.currentStudent = stu;
+    if(stu.results != null)
+    {
+        this.results = stu.results;
+    }
+    else
+        this.results = [];
+}
+    addPayment()
+    {
+        var refstr = "student1/" + this.currentStudent.key + "/payment";
+        this.payments.push(this.paymentForm.value);
+        firebase.database().ref(refstr).set(this.payments);
+        //alert("done");
+    }
+    removePayment(index)
+    {
+        var refstr = "student1/" + this.currentStudent.key + "/payment";
+        console.log(this.payments);
+        this.payments.splice(index,1);
+        console.log(this.payments);
+        firebase.database().ref(refstr).set(this.payments);
+    }
+admitStudent(stu)
+{
+    this.currentSection = "admissions";
+    this.currentStudent = stu;
+    firebase.database().ref("courses/").on('value', resp => {
+            this.courses = snapshotToArray(resp);
+            var refstr = "student1/" + stu.key + "/admission";
+            console.log(refstr);
+            firebase.database().ref(refstr).on('value',resp => {
+            console.log(resp.val());
+            if(resp.val() != null && resp.val() != "")
+            {
+                // set the values for dropdowns
+                var admission = resp.val();
+                this.setSubCourse(admission);
+                this.setCategory(admission);
+                this.admissionForm.setValue(admission);
+                //alert("loading fields");
+                
+                //this.spinnerService.hide();
+                //this.admissionForm.controls.course.setValue(admission.course); 
+                //this.admissionForm.controls.subCourse.setValue(admission.subCourse);
+                //this.admissionForm.controls.category.setValue(admission.category);
+                //console.log(this.admissionForm.controls.course.value);
+            }
+    });
+    });
+    
+    
+    
+    
+}
+    setSubCourse(admission)
+    {
+        this.courses.filter(val => {
+            if(val.catname === admission.course)
+                {
+                    this.subCourses = val.subCategory;
+                    console.log(this.subCourses);
+                    //this.admissionForm.controls.subCourse.setValue(admission.subCourse);
+                     
+                }
+        });
+    }
+    
+    setCategory(admission)
+    {
+        this.subCourses.filter(val => {
+            if(val.subcatname === admission.subCourse)
+            {
+                this.categories = val.list;
+                
+                console.log(this.admissionForm.controls.category.value);
+            }
+        });
+    }
 createFirebaseUser()
 {
     // create a auth user in firebase
@@ -119,8 +387,9 @@ changeGender()
     else
         this.gender1 = "Male";
 }
-constructor() { 
-    this.currentSection = "student";
+constructor(private http:HttpClient) { 
+    //this.currentSection = "student";
+    
 }
 
 addNewStudent()
@@ -152,16 +421,7 @@ searchStudent()
     {
         this.currentSection = "results";
     }
-  ngOnInit() {
-      
-    this.refStudent.once('value', resp => {
-        this.students = snapshotToArray(resp);
-        this.studs = this.students;
-        console.log(this.students);
-    });
-      
   
-  }
 
 }
 
