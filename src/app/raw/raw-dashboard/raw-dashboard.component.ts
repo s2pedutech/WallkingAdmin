@@ -200,7 +200,7 @@ newStudentForm: FormGroup = new FormGroup({
             
             this.admissionForm.controls.enrollNum.setValue(e);
             console.log(this.admissionForm.value);
-            alert("here");
+            //alert("here");
             firebase.database().ref(strref).update(this.admissionForm.value);
             alert("Admitted successfully");
             this.currentSection = "student";
@@ -391,10 +391,14 @@ createFirebaseUser()
     str += "@gmail.com";
     firebase.auth().createUserWithEmailAndPassword(str, this.newStudentForm.controls.password.value).then(res => {
         // create an entry in db under students section
-        var refStr = this.baseStr;
+        console.log(res.user.uid);
+        var key1 = res.user.uid;
+        //console.log(key);
+        var refStr = this.baseStr + key1;
+        
         //var enr = this.generateEnrollmentNum();
         //this.newStudentForm.controls.enrollNum.setValue(enr);
-        var key = firebase.database().ref(this.baseStr).push(this.newStudentForm.value).key;
+        firebase.database().ref(refStr).update(this.newStudentForm.value);
         alert("Student Created Successfully");
         this.currentSection = "student";
         /*
