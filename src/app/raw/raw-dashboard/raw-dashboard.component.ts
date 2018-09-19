@@ -107,6 +107,7 @@ newStudentForm: FormGroup = new FormGroup({
         this.loginForm.reset();
         this.paymentForm.reset();
         this.currentSection = "login";
+        firebase.auth().signOut();
     }
     viewImage(img)
     {
@@ -203,6 +204,7 @@ newStudentForm: FormGroup = new FormGroup({
             //alert("here");
             firebase.database().ref(strref).update(this.admissionForm.value);
             alert("Admitted successfully");
+            firebase.database().ref("lastEnrollment/").set(e);
             this.currentSection = "student";
             });
     }
