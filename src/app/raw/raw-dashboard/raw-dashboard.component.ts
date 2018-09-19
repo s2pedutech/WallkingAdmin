@@ -191,9 +191,9 @@ newStudentForm: FormGroup = new FormGroup({
         
         var str = this.baseStr + "lastEnrollment/";
         firebase.database().ref("lastEnrollment/").once('value', resp => {
-            //console.log(resp.val());
+            console.log(resp.val());
             var enr:any = resp.val();
-            var arr = enr.enum.split("/");
+            var arr = enr.split("/");
             var num = arr[2];
             var nn = arr[0] + "/" + arr[1] + "/" + (parseInt(num) + 1);
             console.log(nn);
